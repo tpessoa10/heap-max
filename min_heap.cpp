@@ -1,89 +1,119 @@
-#include <iostream>
 #include <vector>
+#include <iostream>
 #include <climits>
+
 using namespace std;
 
-class MinHeap {
-private:
-    vector<int> heap;
+typedef vector<int> MinHeap;
 
-    int pai(int i)  { return (i - 1) / 2; }
-    int esq(int i)    { return 2 * i + 1; }
-    int dir(int i)   { return 2 * i + 2; }
+void heapify(MinHeap &heap, int i)
+{
+    int menor = i;
+    int esq = 2 * i + 1;
+    int dir = 2 * i + 2;
 
-    void heapifyUp(int i) {
-        while (i != 0 && heap[pai(i)] > heap[i]) {
-            swap(heap[i], heap[pai(i)]);
-            i = pai(i);
-        }
+    if (esq < heap.size() && heap[esq] < heap[menor])
+        menor = esq;
+    if (dir < heap.size() && heap[dir] < heap[menor])
+        menor = dir;
+
+    if (menor != i)
+    {
+        swap(heap[i], heap[menor]);
+        heapify(heap, menor);
     }
+}
 
-    void heapifyDown(int i) {
-        int smallest = i;
-        int l = esq(i);
-        int r = dir(i);
+void buildHeap(MinHeap &heap)
+{
+    int n = heap.size();
+    for (int i = n / 2 - 1; i >= 0; i--) // os ultimos n/2 elementos já são folhas
+        heapify(heap, i);
+}
 
-        if (l < heap.size() && heap[l] < heap[smallest])
-            smallest = l;
-        if (r < heap.size() && heap[r] < heap[smallest])
-            smallest = r;
+// diferença para o heapify: funciona de baixo para cima
+void insert(MinHeap &heap, int key)
+{
+    heap.push_back(key);
+    int i = heap.size() - 1;
 
-        if (smallest != i) {
-            swap(heap[i], heap[smallest]);
-            heapifyDown(smallest);
-        }
+    while (i != 0 && heap[(i - 1) / 2] > heap[i])
+    {
+        swap(heap[i], heap[(i - 1) / 2]);
+        i = (i - 1) / 2;
     }
+}
 
-public:
-    void inserir(int key) {
-        heap.push_back(key);
-        heapifyUp(heap.size() - 1);
-    }
+// troca o elemento na raiz do heap com o último elemento e remove o último elemento, depois aplica o heapify
+int extractMin(MinHeap &heap)
+{
+    if (heap.size() == 0)
+        return INT_MAX;
 
-    int getMin() const {
-        if (heap.empty()) return INT_MIN;
-        return heap[0];
-    }
-
-    int extrairMin() {
-        if (heap.empty()) return INT_MIN;
-        if (heap.size() == 1) {
-            int root = heap[0];
-            heap.pop_back();
-            return root;
-        }
-
+    if (heap.size() == 1)
+    {
         int root = heap[0];
-        heap[0] = heap.back();
         heap.pop_back();
-        heapifyDown(0);
         return root;
     }
 
-    void print() const {
-        cout << "Heap: ";
-        for (int val : heap)
-            cout << val << " ";
-        cout << endl;
+    int root = heap[0];
+    heap[0] = heap.back();
+    heap.pop_back();
+    heapify(heap, 0);
+
+    return root;
+}
+
+int altura(const MinHeap &heap)
+{
+    int h = 0;
+    int n = heap.size();
+    while (n > 1)
+    {
+        n /= 2;
+        h++;
     }
-};
+    return h;
+}
 
-// Exemplo de uso
-int main() {
-    MinHeap heap;
+vector<int> heapsort(const MinHeap &heap)
+{
+    vector<int> sorted;
+    MinHeap temp = heap;
 
-    heap.inserir(10);
-    heap.inserir(4);
-    heap.inserir(15);
-    heap.inserir(20);
-    heap.inserir(0);
+    while (!temp.empty())
+    {
+        sorted.push_back(extractMin(temp));
+    }
 
-    heap.print();
+    return sorted;
+}
 
-    cout << "Menor elemento: " << heap.getMin() << endl;
-    cout << "Extraindo menor: " << heap.extrairMin() << endl;
+void printHeap(const MinHeap &heap)
+{
+    for (int i = 0; i < heap.size(); i++)
+        cout << heap[i] << " ";
+    cout << endl;
+}
 
-    heap.print();
+int main()
+{
+    MinHeap heap = {3, 1, 6, 5, 2, 4};
+    insert(heap, 9);
+    insert(heap, 12);
+
+    buildHeap(heap);
+
+    cout << "Min-Heap array: ";
+    printHeap(heap);
+    cout << "Minimum element: " << heap[0] << endl;
+
+    cout << "Height of the heap: " << altura(heap) << endl;
+
+    cout << "Sorted array: ";
+    vector<int> sorted = heapsort(heap);
+    printHeap(sorted);
 
     return 0;
 }
