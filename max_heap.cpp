@@ -1,86 +1,62 @@
-#include <iostream>
 #include <vector>
+#include <iostream>
 
-class MaxHeap {
-private:
-    std::vector<int> heap;
+using namespace std;
 
-    void heapifyUp(int index) {
-        while (index > 0 && heap[parent(index)] < heap[index]) {
-            std::swap(heap[parent(index)], heap[index]);
-            index = parent(index);
-        }
+typedef vector<int> MaxHeap;
+
+void heapify(MaxHeap &heap, int i)
+{
+    int largest = i;
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+
+    if (left < heap.size() && heap[left] > heap[largest])
+        largest = left;
+    if (right < heap.size() && heap[right] > heap[largest])
+        largest = right;
+
+    if (largest != i)
+    {
+        swap(heap[i], heap[largest]);
+        heapify(heap, largest);
     }
+}
 
-    void heapifyDown(int index) {
-        int leftIdx = left(index);
-        int rightIdx = right(index);
-        int largest = index;
+void buildHeap(MaxHeap &heap)
+{
+    int n = heap.size();
+    for (int i = n / 2 - 1; i >= 0; i--)
+        heapify(heap, i);
+}
 
-        if (leftIdx < heap.size() && heap[leftIdx] > heap[largest])
-            largest = leftIdx;
+void insert(MaxHeap &heap, int key)
+{
+    heap.push_back(key);
+    int i = heap.size() - 1;
 
-        if (rightIdx < heap.size() && heap[rightIdx] > heap[largest])
-            largest = rightIdx;
-
-        if (largest != index) {
-            std::swap(heap[index], heap[largest]);
-            heapifyDown(largest);
-        }
+    while (i != 0 && heap[(i - 1) / 2] < heap[i])
+    {
+        swap(heap[i], heap[(i - 1) / 2]);
+        i = (i - 1) / 2;
     }
+}
 
-    int parent(int i)   { return (i - 1) / 2; }
-    int left(int i)     { return 2 * i + 1; }
-    int right(int i)    { return 2 * i + 2; }
+void printHeap(const MaxHeap &heap)
+{
+    for (int i = 0; i < heap.size(); i++)
+        cout << heap[i] << " ";
+    cout << endl;
+}
 
-public:
-    void insert(int value) {
-        heap.push_back(value);
-        heapifyUp(heap.size() - 1);
-    }
+int main()
+{
+    MaxHeap heap = {3, 1, 6, 5, 2, 4};
 
-    void removeMax() {
-        if (heap.empty()) {
-            std::cout << "Heap vazio.\n";
-            return;
-        }
-        heap[0] = heap.back();
-        heap.pop_back();
-        heapifyDown(0);
-    }
+    buildHeap(heap);
 
-    int getMax() const {
-        if (!heap.empty())
-            return heap[0];
-        throw std::runtime_error("Heap vazio.");
-    }
+    cout << "Max-Heap array: ";
+    printHeap(heap);
+    cout << "Maximum element: " << heap[0] << endl;
 
-    void printHeap() const {
-        for (int val : heap)
-            std::cout << val << " ";
-        std::cout << "\n";
-    }
-};
-
-int main() {
-    MaxHeap heap;
-
-    heap.insert(10);
-    heap.insert(20);
-    heap.insert(5);
-    heap.insert(30);
-    heap.insert(1);
-
-    std::cout << "Heap atual: ";
-    heap.printHeap();
-
-    std::cout << "Maximo: " << heap.getMax() << "\n";
-
-    heap.removeMax();
-    std::cout << "Apos remover o maximo: ";
-    heap.removeMax();
-    std::cout << "Apos remover o maximo novamente";
-    heap.printHeap();
-
-    return 0;
 }
